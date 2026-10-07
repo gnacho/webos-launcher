@@ -4,7 +4,7 @@ import {Settings, type SettingsTab} from './screens/Settings';
 import type {OptionItem} from './components/OptionList';
 import {Toast, type ToastMessage} from './components/Toast';
 import type {TileModel} from './components/Tile';
-import {listApps, type AppEntry} from './lib/apps';
+import {listApps, readAppCache, writeAppCache, type AppEntry} from './lib/apps';
 import {listInputs, MOCK_INPUTS, type InputSource} from './lib/inputs';
 import {launchApp, launchLgHome} from './lib/launch';
 import {isWebOS} from './lib/luna';
@@ -27,7 +27,9 @@ const MISC_TILES: TileModel[] = [
 export function App () {
 	const [screen, setScreen] = useState<Screen>('home');
 	const [config, setConfig] = useState<UserConfig>(loadConfig);
-	const [apps, setApps] = useState<AppEntry[]>([]);
+	// Show the previous run's app list instantly; the background refresh below
+	// replaces it once the per-app luna round-trips resolve.
+	const [apps, setApps] = useState<AppEntry[]>(readAppCache);
 	const [inputs, setInputs] = useState<InputSource[]>([]);
 	const [toast, setToast] = useState<ToastMessage | null>(null);
 	const toastTimer = useRef(0);
@@ -48,6 +50,7 @@ export function App () {
 		listApps(config.useHomebrew)
 			.then(({apps: list, source}) => {
 				setApps(list);
+				if (source === 'catalog') writeAppCache(list);
 				if (config.useHomebrew && source !== 'homebrew') showToast('Homebrew Channel not available, using the built-in app list', 'error');
 			})
 			.catch(() => showToast('Could not read the app list', 'error'));
