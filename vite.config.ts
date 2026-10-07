@@ -1,13 +1,14 @@
 import {defineConfig, type Plugin} from 'vite';
 import preact from '@preact/preset-vite';
 
-// webOS 6.x runs Chrome 79. Two things matter for that engine:
+// webOS 5.x runs Chrome 68 and webOS 6.x runs Chrome 79. Two things matter for those engines:
 //  1. Module scripts (`<script type="module">`) are refused when loaded from file://
 //     because the sandbox serves them with no MIME type, so the bundle must be a
 //     classic script.
 //  2. ES2020 syntax such as `?.` and `??` is a SyntaxError, so everything
-//     (dependencies included) is compiled down to the chrome79 target.
-const BROWSER_TARGET = 'chrome79';
+//     (dependencies included) is compiled down to the oldest target, chrome68,
+//     which keeps the app valid on both webOS 5 and webOS 6.
+const BROWSER_TARGET = 'chrome68';
 
 /** Rewrites Vite's module entry tag into a classic deferred script tag. */
 function classicScriptTag (): Plugin {
