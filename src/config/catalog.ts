@@ -66,8 +66,14 @@ const BASE_CATALOG: CatalogApp[] = [
 	{id: 'org.webosbrew.hbchannel', title: 'Homebrew', icon: 'org.webosbrew.hbchannel.png'},
 	{id: 'org.webosbrew.inputhook', title: 'Input Hook', icon: 'org.webosbrew.inputhook.png'},
 	{id: 'org.webosbrew.safeupdate', title: 'HB Updater', icon: 'org.webosbrew.safeupdate.png'},
+	{id: 'org.webosbrew.appupdateblocker', title: 'Update Blocker', icon: 'org.webosbrew.appupdateblocker.png'},
 	{id: 'com.lennylxx.iptv', title: 'IPTV Player', icon: 'com.lennylxx.iptv.png'},
-	{id: 'org.jellyfin.webos', title: 'Jellyfin', color: '#00a4dc'}
+	{id: 'org.jellyfin.webos', title: 'Jellyfin', icon: 'org.jellyfin.webos.png'},
+	{id: 'org.litefin.app', title: 'Litefin', icon: 'org.litefin.app.png'},
+	{id: 'org.moonfin.webos', title: 'Moonfin', icon: 'org.moonfin.webos.png'},
+	{id: 'com.butaca', title: 'Butaca', icon: 'com.butaca.png'},
+	{id: 'com.butaca.debug', title: 'Butaca debug', icon: 'com.butaca.png'},
+	{id: 'com.amazoff.patcher', title: 'Amazoff', icon: 'com.amazoff.patcher.png'}
 ];
 
 /** Apps shown on a fresh install, in row order. Anything not installed is skipped. */
