@@ -3,6 +3,7 @@
 
 import {STORAGE_KEY} from '../config/constants';
 import {DEFAULT_APP_IDS} from '../config/catalog';
+import type {WeatherCity} from './weather';
 
 export interface UserConfig {
 	/** ordered app IDs for the Apps row */
@@ -11,12 +12,15 @@ export interface UserConfig {
 	sourceIds: string[] | null;
 	/** read the live app list through the Homebrew Channel (root). Off by default. */
 	useHomebrew: boolean;
+	/** city for the weather widget; null → hidden */
+	weatherCity: WeatherCity | null;
 }
 
 export const DEFAULT_CONFIG: UserConfig = {
 	appIds: DEFAULT_APP_IDS.slice(),
 	sourceIds: null,
-	useHomebrew: false
+	useHomebrew: false,
+	weatherCity: null
 };
 
 export function loadConfig (): UserConfig {
@@ -27,7 +31,10 @@ export function loadConfig (): UserConfig {
 		return {
 			appIds: Array.isArray(parsed.appIds) ? parsed.appIds : DEFAULT_CONFIG.appIds,
 			sourceIds: Array.isArray(parsed.sourceIds) ? parsed.sourceIds : null,
-			useHomebrew: parsed.useHomebrew === true
+			useHomebrew: parsed.useHomebrew === true,
+			weatherCity: parsed.weatherCity && typeof parsed.weatherCity.name === 'string'
+				? parsed.weatherCity as WeatherCity
+				: null
 		};
 	} catch {
 		return {...DEFAULT_CONFIG};
