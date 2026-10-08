@@ -35,6 +35,13 @@ export interface Strings {
 	nothingOnHome: string;
 	optionUseHomebrew: string;
 	optionUseHomebrewDesc: string;
+	optionWeather: string;
+	optionWeatherDesc: string;
+	weatherNoCity: string;
+	weatherSearchTitle: string;
+	weatherSearchPlaceholder: string;
+	weatherSearchHint: string;
+	weatherNoResults: string;
 	toastHomebrewUnavailable: string;
 	toastAppListFailed: string;
 	toastInputsFailed: string;
@@ -73,6 +80,13 @@ export const EN: Strings = {
 	nothingOnHome: 'Nothing on the home screen yet.',
 	optionUseHomebrew: 'Live app list via Homebrew Channel',
 	optionUseHomebrewDesc: 'Rooted TVs only. Lists every installed app with its real icon, using the Homebrew Channel, which runs commands as root. When off, the built-in app catalogue is used.',
+	optionWeather: 'Weather location',
+	optionWeatherDesc: 'Pick a city to show the current weather on the home screen (Open-Meteo, free, no account).',
+	weatherNoCity: 'No city set',
+	weatherSearchTitle: 'Weather location',
+	weatherSearchPlaceholder: 'Type a city name',
+	weatherSearchHint: 'Use the on-screen keyboard; results appear as you type.',
+	weatherNoResults: 'No cities found',
 	toastHomebrewUnavailable: 'Homebrew Channel not available, using the built-in app list',
 	toastAppListFailed: 'Could not read the app list',
 	toastInputsFailed: 'Could not read the inputs',
@@ -110,6 +124,13 @@ export const ES: Strings = {
 	nothingOnHome: 'Aún no hay nada en la pantalla de inicio.',
 	optionUseHomebrew: 'Lista de apps en vivo vía Homebrew Channel',
 	optionUseHomebrewDesc: 'Solo TVs rooteadas. Lista todas las apps instaladas con su icono real usando el Homebrew Channel, que ejecuta comandos como root. Si está desactivado, se usa el catálogo integrado.',
+	optionWeather: 'Ubicación del tiempo',
+	optionWeatherDesc: 'Elige una ciudad para ver el tiempo actual en la pantalla de inicio (Open-Meteo, gratis, sin cuenta).',
+	weatherNoCity: 'Sin ciudad',
+	weatherSearchTitle: 'Ubicación del tiempo',
+	weatherSearchPlaceholder: 'Escribe el nombre de una ciudad',
+	weatherSearchHint: 'Usa el teclado en pantalla; los resultados aparecen mientras escribes.',
+	weatherNoResults: 'No se encontraron ciudades',
 	toastHomebrewUnavailable: 'Homebrew Channel no disponible, usando la lista de apps integrada',
 	toastAppListFailed: 'No se pudo leer la lista de apps',
 	toastInputsFailed: 'No se pudieron leer las entradas',

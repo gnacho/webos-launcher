@@ -1,11 +1,13 @@
 import {useCallback, useState} from 'preact/hooks';
 import {Header} from '../components/Header';
 import {Clock} from '../components/Clock';
+import {Weather} from '../components/Weather';
 import {Row} from '../components/Row';
 import type {TileModel} from '../components/Tile';
 import {useKeys, clamp, type NavKey} from '../hooks/useKeys';
 import {useClock} from '../hooks/useClock';
 import {useTimeFormat} from '../hooks/useTimeFormat';
+import type {WeatherCity, WeatherInfo} from '../lib/weather';
 
 export interface HomeRow {
 	id: string;
@@ -17,12 +19,14 @@ export interface HomeRow {
 interface Props {
 	rows: HomeRow[];
 	active: boolean;
+	weather?: WeatherInfo | null;
+	weatherCity?: WeatherCity | null;
 	onActivate: (rowId: string, item: TileModel) => void;
 }
 
 /** The home screen: greeting, clock and the navigable rows.
  *  Up/Down move between rows (each row remembers its column), Left/Right move along a row. */
-export function Home ({rows, active, onActivate}: Props) {
+export function Home ({rows, active, weather, weatherCity, onActivate}: Props) {
 	const now = useClock();
 	const timeFormat = useTimeFormat();
 	const [rowIndex, setRowIndex] = useState(0);
@@ -53,6 +57,7 @@ export function Home ({rows, active, onActivate}: Props) {
 	return (
 		<div class="screen">
 			<Header now={now} />
+			<Weather info={weather || null} city={weatherCity || null} />
 			<Clock now={now} format={timeFormat} />
 			<div class="rows">
 				{rows.map((row, i) => (
