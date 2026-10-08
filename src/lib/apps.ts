@@ -39,6 +39,31 @@ export function listApps (useHomebrew: boolean): Promise<AppList> {
 		.catch(catalog);
 }
 
+// ---------- instant-first-load cache ----------
+
+const APP_CACHE_KEY = 'launcher-app-cache-v1';
+
+/** The app list resolved on the previous run, for showing tiles before the
+ *  per-app luna round-trips finish. IDs are validated against the catalogue so
+ *  a stale or corrupted entry can never invent an app. */
+export function readAppCache (): AppEntry[] {
+	try {
+		const raw = JSON.parse(localStorage.getItem(APP_CACHE_KEY) || 'null');
+		if (!Array.isArray(raw)) return [];
+		return raw
+			.filter((id): id is string => typeof id === 'string')
+			.map((id) => APP_CATALOG.find((a) => a.id === id))
+			.filter((a): a is CatalogApp => Boolean(a))
+			.map((a) => catalogEntries([a])[0]);
+	} catch { return []; }
+}
+
+export function writeAppCache (entries: AppEntry[]): void {
+	try {
+		localStorage.setItem(APP_CACHE_KEY, JSON.stringify(entries.map((e) => e.id)));
+	} catch { /* quota exceeded: next start just re-resolves the list */ }
+}
+
 // ---------- provider 1: catalogue ----------
 
 function catalogEntries (apps: CatalogApp[]): AppEntry[] {
