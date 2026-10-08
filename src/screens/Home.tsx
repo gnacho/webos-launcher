@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'preact/hooks';
+import {useCallback, useEffect, useRef, useState} from 'preact/hooks';
 import {Header} from '../components/Header';
 import {Clock} from '../components/Clock';
 import {Weather} from '../components/Weather';
@@ -7,6 +7,8 @@ import type {TileModel} from '../components/Tile';
 import {useKeys, clamp, type NavKey} from '../hooks/useKeys';
 import {useClock} from '../hooks/useClock';
 import {useTimeFormat} from '../hooks/useTimeFormat';
+import {dayName, dateText, timeParts} from '../lib/clock';
+import {useStrings} from '../hooks/useStrings';
 import type {WeatherCity, WeatherInfo} from '../lib/weather';
 
 export interface HomeRow {
@@ -24,18 +26,39 @@ interface Props {
 	onActivate: (rowId: string, item: TileModel) => void;
 }
 
+const AMBIENT_MS = 60 * 1000;
+
 /** The home screen: greeting, clock and the navigable rows.
- *  Up/Down move between rows (each row remembers its column), Left/Right move along a row. */
+ *  Up/Down move between rows (each row remembers its column), Left/Right move along a row.
+ *  After a minute without input it fades to an ambient full-screen clock; the next
+ *  key press exits ambient without acting on the focused tile. */
 export function Home ({rows, active, weather, weatherCity, onActivate}: Props) {
+	const s = useStrings();
 	const now = useClock();
 	const timeFormat = useTimeFormat();
 	const [rowIndex, setRowIndex] = useState(0);
 	const [columns, setColumns] = useState<Record<string, number>>({});
+	const [ambient, setAmbient] = useState(false);
+	const idleTimer = useRef(0);
 
 	const columnOf = (row: HomeRow) => clamp(columns[row.id] || 0, 0, Math.max(0, row.items.length - 1));
 	const setColumn = (rowId: string, col: number) => setColumns((c) => ({...c, [rowId]: col}));
 
+	// Idle → ambient. Any pointer activity counts as input too.
+	const poke = useCallback(() => {
+		setAmbient(false);
+		window.clearTimeout(idleTimer.current);
+		idleTimer.current = window.setTimeout(() => setAmbient(true), AMBIENT_MS);
+	}, []);
+	useEffect(() => {
+		if (!active) { window.clearTimeout(idleTimer.current); setAmbient(false); return; }
+		poke();
+		return () => window.clearTimeout(idleTimer.current);
+	}, [active, poke]);
+
 	const handleKey = useCallback((key: NavKey): boolean => {
+		poke();
+		if (ambient) return true;        // first key only exits ambient
 		const row = rows[rowIndex];
 		if (!row) return false;
 		switch (key) {
@@ -50,12 +73,14 @@ export function Home ({rows, active, weather, weatherCity, onActivate}: Props) {
 			}
 			case 'back': return true;   // swallow: Back on the home screen does nothing
 		}
-	}, [rows, rowIndex, columns, onActivate]);
+	}, [rows, rowIndex, columns, onActivate, ambient, poke]);
 
 	useKeys(handleKey, active);
 
+	const t = timeParts(now, timeFormat);
+
 	return (
-		<div class="screen">
+		<div class={`screen${ambient ? ' screen--ambient' : ''}`} onMouseMove={poke} onClick={poke}>
 			<Header now={now} />
 			<Weather info={weather || null} city={weatherCity || null} />
 			<Clock now={now} format={timeFormat} />
@@ -73,6 +98,16 @@ export function Home ({rows, active, weather, weatherCity, onActivate}: Props) {
 					/>
 				))}
 			</div>
+			{ambient && (
+				<div class="ambient">
+					<div class="ambient__day">{dayName(now, s)}</div>
+					<div class="ambient__date">{dateText(now, s)}</div>
+					<div class="ambient__time">
+						{t.time}
+						{t.period && <span class="ambient__period">{t.period}</span>}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
