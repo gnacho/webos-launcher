@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'preact/hooks';
 import {Header} from '../components/Header';
 import {Clock} from '../components/Clock';
+import {Weather} from '../components/Weather';
 import {Row} from '../components/Row';
 import type {TileModel} from '../components/Tile';
 import {useKeys, clamp, type NavKey} from '../hooks/useKeys';
@@ -8,6 +9,7 @@ import {useClock} from '../hooks/useClock';
 import {useTimeFormat} from '../hooks/useTimeFormat';
 import {dayName, dateText, timeParts} from '../lib/clock';
 import {useStrings} from '../hooks/useStrings';
+import type {WeatherCity, WeatherInfo} from '../lib/weather';
 
 export interface HomeRow {
 	id: string;
@@ -19,6 +21,8 @@ export interface HomeRow {
 interface Props {
 	rows: HomeRow[];
 	active: boolean;
+	weather?: WeatherInfo | null;
+	weatherCity?: WeatherCity | null;
 	onActivate: (rowId: string, item: TileModel) => void;
 }
 
@@ -28,7 +32,7 @@ const AMBIENT_MS = 60 * 1000;
  *  Up/Down move between rows (each row remembers its column), Left/Right move along a row.
  *  After a minute without input it fades to an ambient full-screen clock; the next
  *  key press exits ambient without acting on the focused tile. */
-export function Home ({rows, active, onActivate}: Props) {
+export function Home ({rows, active, weather, weatherCity, onActivate}: Props) {
 	const s = useStrings();
 	const now = useClock();
 	const timeFormat = useTimeFormat();
@@ -78,6 +82,7 @@ export function Home ({rows, active, onActivate}: Props) {
 	return (
 		<div class={`screen${ambient ? ' screen--ambient' : ''}`} onMouseMove={poke} onClick={poke}>
 			<Header now={now} />
+			<Weather info={weather || null} city={weatherCity || null} />
 			<Clock now={now} format={timeFormat} />
 			<div class="rows">
 				{rows.map((row, i) => (

@@ -26,3 +26,6 @@ removed can open an issue on this repository and it will be removed. Every app t
 back to a plain text tile without its icon, so removal doesn't break anything.
 
 "LG" and "webOS" are trademarks of LG Electronics.
+
+The settings (gear) glyph in `src/components/Glyph.tsx` is derived from Google's
+Material Symbols "settings" icon, licensed under the Apache License 2.0.

@@ -1,10 +1,12 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'preact/hooks';
 import {Home, type HomeRow} from './screens/Home';
 import {Settings, type SettingsTab} from './screens/Settings';
+import {CitySearch} from './screens/CitySearch';
 import type {OptionItem} from './components/OptionList';
 import {Toast, type ToastMessage} from './components/Toast';
 import type {TileModel} from './components/Tile';
 import {useStrings} from './hooks/useStrings';
+import {useWeather} from './hooks/useWeather';
 import {listApps, readAppCache, writeAppCache, type AppEntry} from './lib/apps';
 import {listInputs, MOCK_INPUTS, type InputSource} from './lib/inputs';
 import {launchApp, launchLgHome} from './lib/launch';
@@ -13,13 +15,14 @@ import {hidePointerOnForeground} from './lib/pointer';
 import {loadConfig, saveConfig, toggleId, type UserConfig} from './lib/storage';
 import {appTile, inputTile, pickInOrder} from './lib/tiles';
 import {fill} from './lib/strings';
+import type {WeatherCity} from './lib/weather';
 import {TIMING} from './config/constants';
 
-type Screen = 'home' | 'settings';
+type Screen = 'home' | 'settings' | 'citysearch';
 
 const ROW = {apps: 'apps', sources: 'sources', misc: 'misc'} as const;
 const MISC = {lgHome: 'lg-home', settings: 'settings'} as const;
-const OPTION = {useHomebrew: 'use-homebrew'} as const;
+const OPTION = {useHomebrew: 'use-homebrew', weather: 'weather'} as const;
 
 export function App () {
 	const s = useStrings();
@@ -29,6 +32,7 @@ export function App () {
 	// replaces it once the per-app luna round-trips resolve.
 	const [apps, setApps] = useState<AppEntry[]>(readAppCache);
 	const [inputs, setInputs] = useState<InputSource[]>([]);
+	const weather = useWeather(config.weatherCity);
 	const [toast, setToast] = useState<ToastMessage | null>(null);
 	const toastTimer = useRef(0);
 
@@ -96,8 +100,15 @@ export function App () {
 			label: s.optionUseHomebrew,
 			description: s.optionUseHomebrewDesc,
 			value: config.useHomebrew
+		},
+		{
+			id: OPTION.weather,
+			label: s.optionWeather,
+			description: s.optionWeatherDesc,
+			value: config.weatherCity != null,
+			text: config.weatherCity ? config.weatherCity.name : s.weatherNoCity
 		}
-	], [config.useHomebrew, s]);
+	], [config.useHomebrew, config.weatherCity, s]);
 
 	// ----- actions -----
 	const open = (id: string, label: string) => {
@@ -124,6 +135,12 @@ export function App () {
 
 	const onOption = useCallback((optionId: string) => {
 		if (optionId === OPTION.useHomebrew) updateConfig({...config, useHomebrew: !config.useHomebrew});
+		else if (optionId === OPTION.weather) setScreen('citysearch');
+	}, [config]);
+
+	const onPickCity = useCallback((city: WeatherCity) => {
+		updateConfig({...config, weatherCity: city});
+		setScreen('settings');
 	}, [config]);
 
 	/** Replace a row's order with `keys` (the full list of what's shown). */
@@ -135,8 +152,9 @@ export function App () {
 	return (
 		<>
 			{/* Home stays mounted under Settings so it keeps its focus position. */}
-			<Home rows={rows} active={screen === 'home'} onActivate={onActivate} />
+			<Home rows={rows} active={screen === 'home'} weather={weather} weatherCity={config.weatherCity} onActivate={onActivate} />
 			{screen === 'settings' && <Settings tabs={tabs} options={options} active onToggle={onToggle} onReorder={onReorder} onOption={onOption} onClose={() => setScreen('home')} />}
+			{screen === 'citysearch' && <CitySearch active onPick={onPickCity} onClose={() => setScreen('settings')} />}
 			<Toast message={toast} />
 		</>
 	);

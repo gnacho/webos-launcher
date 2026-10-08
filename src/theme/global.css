@@ -396,3 +396,124 @@ html, body {
 	from { opacity: 0; transform: translateY(8px); }
 	to   { opacity: 1; transform: none; }
 }
+
+/* ---------- weather ---------- */
+
+.weather {
+	position: absolute;
+	left: var(--layout-edge-padding);
+	top: var(--layout-header-top);
+	color: var(--color-text-secondary);
+	font-weight: 300;
+	line-height: 1.2;
+	pointer-events: none;
+}
+.weather__icon {
+	width: 36px; height: 36px;
+	vertical-align: middle;
+	margin-right: 10px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.6;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.weather__temp {
+	font-size: var(--font-clock-time);
+	font-weight: 200;
+	vertical-align: middle;
+}
+.weather__city {
+	font-size: var(--font-clock);
+	margin-left: 10px;
+	vertical-align: middle;
+	opacity: 0.85;
+}
+
+/* ---------- city search ---------- */
+
+.screen--overlay { z-index: 10; }
+
+.search__title {
+	position: absolute;
+	left: 0; right: 0;
+	top: var(--layout-header-top);
+	margin: 0;
+	text-align: center;
+	font-size: var(--font-greeting);
+	font-weight: 300;
+	color: var(--color-text-primary);
+}
+.search__query {
+	position: absolute;
+	left: 0; right: 0;
+	top: 210px;
+	text-align: center;
+	font-size: 40px;
+	font-weight: 300;
+	color: var(--color-text-primary);
+}
+.search__placeholder { opacity: 0.35; }
+.search__cursor { opacity: 0.6; }
+.search__keyboard {
+	position: absolute;
+	left: 0; right: 0;
+	top: 300px;
+	text-align: center;
+}
+.search__keyrow { margin-bottom: 12px; }
+.search__key {
+	width: 64px; height: 64px;
+	margin: 0 6px;
+	font-family: var(--font-family);
+	font-size: 26px;
+	font-weight: 300;
+	color: var(--color-text-secondary);
+	background: transparent;
+	border: 1.5px solid var(--color-tile-border, #3a3f46);
+	border-radius: 14px;
+	cursor: pointer;
+}
+.search__key--focused {
+	color: var(--color-text-primary);
+	border-color: var(--color-text-primary);
+	background: rgba(255, 255, 255, 0.06);
+}
+.search__results {
+	position: absolute;
+	left: var(--layout-edge-padding);
+	right: var(--layout-edge-padding);
+	top: 640px;
+	text-align: center;
+	min-height: 120px;
+}
+.search__hint {
+	margin-top: 30px;
+	font-size: 24px;
+	color: var(--color-text-secondary);
+	opacity: 0.8;
+}
+.search__result {
+	display: inline-block;
+	width: 240px;
+	margin: 0 14px;
+	padding: 18px 12px;
+	background: transparent;
+	border: 1.5px solid var(--color-tile-border, #3a3f46);
+	border-radius: 18px;
+	color: var(--color-text-primary);
+	font-family: var(--font-family);
+	cursor: pointer;
+}
+.search__result--focused {
+	border-color: var(--color-text-primary);
+	background: rgba(255, 255, 255, 0.06);
+}
+.search__result-name { font-size: 28px; font-weight: 400; }
+.search__result-country { font-size: 20px; font-weight: 300; color: var(--color-text-secondary); margin-top: 6px; }
+
+.option__value {
+	font-size: 26px;
+	font-weight: 300;
+	color: var(--color-text-secondary);
+}
