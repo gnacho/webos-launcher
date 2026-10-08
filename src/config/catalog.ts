@@ -47,6 +47,15 @@ const BASE_CATALOG: CatalogApp[] = [
 	{id: 'com.tubitv.ott.tubi', title: 'Tubi', color: '#7408ff'},
 	{id: 'com.espn.espnplus-prod', title: 'ESPN', color: '#c8102e'},
 	{id: 'vudu', title: 'Fandango at Home', color: '#3399ff'},
+	// Spain (IDs from public sources, unverified; skipped if wrong)
+	{id: 'rtve', title: 'RTVE Play', color: '#0079c8'},
+	{id: 'com.movistarplus.plus', title: 'Movistar Plus+', color: '#019df4'},
+	{id: 'com.antena3.atresplayer', title: 'Atresplayer', color: '#0f8b8d'},
+	{id: 'com.mediaset.mitele', title: 'Mitele', color: '#e6a800'},
+	{id: 'com.skyshowtime', title: 'SkyShowtime', color: '#0047bb'},
+	{id: 'dazn', title: 'DAZN', color: '#c8a200'},
+	{id: 'filmin', title: 'Filmin', color: '#d94f30'},
+	{id: 'com.rakuten.tv', title: 'Rakuten TV', color: '#bf0000'},
 	// UK
 	{id: 'bbc.iplayer.3.0', title: 'BBC iPlayer', icon: 'bbc.iplayer.3.0.png'},
 	{id: 'bbc.sounds.1.0', title: 'BBC Sounds', icon: 'bbc.sounds.1.0.png'},
