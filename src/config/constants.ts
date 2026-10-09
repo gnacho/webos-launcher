@@ -2,6 +2,9 @@
 
 export const APP_ID = 'works.partridge.webos-launcher';
 
+/** Butaca reads this launch param as a Jellyfin item id and opens its detail page. */
+export const BUTACA_APP_ID = 'com.butaca.debug';
+
 /** webOS app IDs the launcher itself needs. */
 export const SYSTEM_APP = {
 	lgHome: 'com.webos.app.home',
