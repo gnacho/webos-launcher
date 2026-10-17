@@ -2,8 +2,11 @@
 
 export const APP_ID = 'works.partridge.webos-launcher';
 
-/** Butaca reads this launch param as a Jellyfin item id and opens its detail page. */
-export const BUTACA_APP_ID = 'com.butaca.debug';
+/** Butaca reads the `jellyfinItemId` launch param as an item id and opens its detail page.
+ *  It ships as a release and a debug flavour; the launcher deep-links into whichever one
+ *  the TV has installed. */
+export const BUTACA_APP_ID = 'com.butaca';
+export const BUTACA_DEBUG_APP_ID = 'com.butaca.debug';
 
 /** webOS app IDs the launcher itself needs. */
 export const SYSTEM_APP = {

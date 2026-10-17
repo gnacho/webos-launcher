@@ -483,9 +483,8 @@ html, body {
 	position: absolute;
 	left: var(--layout-edge-padding);
 	right: var(--layout-edge-padding);
-	top: 640px;
+	top: 720px;
 	text-align: center;
-	min-height: 120px;
 }
 .search__hint {
 	margin-top: 30px;

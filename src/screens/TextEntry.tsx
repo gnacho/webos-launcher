@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'preact/hooks';
 import {useKeys, clamp, type NavKey} from '../hooks/useKeys';
+import {hidePointer, showPointer} from '../lib/pointer';
 
 // On-screen keyboard text entry for the remote. With a `provider` the screen is a live
 // search (debounced results, Down moves into the results row); without one, the ↵ key (or
@@ -9,7 +10,7 @@ import {useKeys, clamp, type NavKey} from '../hooks/useKeys';
 export interface TextEntryResult {id: string; label: string; sub?: string}
 
 const KEY_ROWS: string[][] = [
-	['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+	['✕', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
 	['0', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
 	['i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q'],
 	['r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
@@ -20,6 +21,7 @@ const SPACE = ' ';
 const BACKSPACE = '⌫';
 const SUBMIT = '↵';
 const SHIFT = '⇧';
+const CANCEL = '✕';
 
 interface Props {
 	active: boolean;
@@ -28,11 +30,13 @@ interface Props {
 	hint?: string;
 	/** live results; omit for plain text entry, where ↵ submits the typed text */
 	provider?: (query: string) => Promise<TextEntryResult[]>;
+	/** allow ↵ with an empty field (the Jellyfin password may be empty) */
+	submitEmpty?: boolean;
 	onPick: (result: TextEntryResult) => void;
 	onClose: () => void;
 }
 
-export function TextEntry ({active, title, placeholder, hint, provider, onPick, onClose}: Props) {
+export function TextEntry ({active, title, placeholder, hint, provider, submitEmpty, onPick, onClose}: Props) {
 	const [query, setQuery] = useState('');
 	const [results, setResults] = useState<TextEntryResult[]>([]);
 	const [zone, setZone] = useState<'keys' | 'results'>('keys');
@@ -42,11 +46,20 @@ export function TextEntry ({active, title, placeholder, hint, provider, onPick, 
 	const [upper, setUpper] = useState(false);
 	const searchTimer = useRef(0);
 
-	// Debounced live search (only when a provider exists)
+	// Text screens are pointer-first: the launcher hides the cursor on foreground, so bring
+	// it back here (aiming at keys beats walking a 5-way through digits), and hide it again
+	// on the way out.
+	useEffect(() => {
+		if (!active) return;
+		showPointer();
+		return hidePointer;
+	}, [active]);
+
+	// Debounced live search (only when a provider exists). An empty query is passed through
+	// too: discovery-style providers answer with their full list for ''.
 	useEffect(() => {
 		if (!provider) { setResults([]); return; }
 		window.clearTimeout(searchTimer.current);
-		if (!query.trim()) { setResults([]); return; }
 		searchTimer.current = window.setTimeout(() => {
 			provider(query)
 				.then((list) => { setResults(list); setResultIndex(0); })
@@ -57,13 +70,14 @@ export function TextEntry ({active, title, placeholder, hint, provider, onPick, 
 
 	const submit = () => {
 		const text = query.trim();
-		if (!text) return;
+		if (!text && !submitEmpty) return;
 		if (provider) setZone('results');
 		else onPick({id: text, label: text});
 	};
 
 	const pressKey = (k: string) => {
-		if (k === BACKSPACE) setQuery((q) => q.slice(0, -1));
+		if (k === CANCEL) onClose();
+		else if (k === BACKSPACE) setQuery((q) => q.slice(0, -1));
 		else if (k === SUBMIT) submit();
 		else if (k === SHIFT) setUpper((u) => !u);
 		else setQuery((q) => (q + (upper ? k.toUpperCase() : k)).slice(0, 128));
@@ -121,7 +135,7 @@ export function TextEntry ({active, title, placeholder, hint, provider, onPick, 
 								onClick={() => { setZone('keys'); setRow(r); setCol(c); pressKey(k); }}
 								onMouseEnter={() => { setZone('keys'); setRow(r); setCol(c); }}
 							>
-								{k === SPACE ? '␣' : k === SHIFT ? (upper ? '⇩' : '⇧') : upper && k >= 'a' && k <= 'z' ? k.toUpperCase() : k}
+								{k === SPACE ? '␣' : k === CANCEL ? '✕' : k === SHIFT ? (upper ? '⇩' : '⇧') : upper && k >= 'a' && k <= 'z' ? k.toUpperCase() : k}
 							</button>
 						))}
 					</div>

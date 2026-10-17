@@ -7,7 +7,7 @@ import {Toast, type ToastMessage} from './components/Toast';
 import type {TileModel} from './components/Tile';
 import {useStrings} from './hooks/useStrings';
 import {useWeather} from './hooks/useWeather';
-import {useJellyfinCw} from './hooks/useJellyfinCw';
+import {useJellyfinCw, useJellyfinNextUp} from './hooks/useJellyfinShelf';
 import {listApps, readAppCache, writeAppCache, type AppEntry} from './lib/apps';
 import {listInputs, MOCK_INPUTS, type InputSource} from './lib/inputs';
 import {launchApp, launchLgHome} from './lib/launch';
@@ -18,15 +18,24 @@ import {appTile, inputTile, pickInOrder} from './lib/tiles';
 import {fill} from './lib/strings';
 import type {WeatherCity} from './lib/weather';
 import {searchCities} from './lib/weather';
-import {authenticate, normalizeUrl, type JellyfinServer} from './lib/jellyfin';
-import {BUTACA_APP_ID, TIMING} from './config/constants';
+import {authenticate, discoverServers, normalizeUrl, type CwItem, type JellyfinServer} from './lib/jellyfin';
+import {BUTACA_APP_ID, BUTACA_DEBUG_APP_ID, TIMING} from './config/constants';
 
 type Screen = 'home' | 'settings';
 type Entry = 'weather' | 'jf-url' | 'jf-user' | 'jf-pass' | null;
 
-const ROW = {cw: 'cw', apps: 'apps', sources: 'sources', misc: 'misc'} as const;
+const ROW = {cw: 'cw', nextUp: 'next-up', apps: 'apps', sources: 'sources', misc: 'misc'} as const;
 const MISC = {lgHome: 'lg-home', settings: 'settings'} as const;
 const OPTION = {useHomebrew: 'use-homebrew', weather: 'weather', jellyfin: 'jellyfin'} as const;
+
+/** Shelf entries as tiles: "Series: episode" reads better than the episode name alone. */
+function shelfTiles (items: CwItem[]): TileModel[] {
+	return items.map((item) => ({
+		key: item.id,
+		label: item.seriesName ? `${item.seriesName}: ${item.label}` : item.label,
+		imageUrl: item.imageUrl
+	}));
+}
 
 export function App () {
 	const s = useStrings();
@@ -38,8 +47,11 @@ export function App () {
 	const [apps, setApps] = useState<AppEntry[]>(readAppCache);
 	const [inputs, setInputs] = useState<InputSource[]>([]);
 	const [jfDraft, setJfDraft] = useState<{url?: string; user?: string}>({});
+	const [jfFound, setJfFound] = useState<string[] | null>(null);   // null = scanning
+	const jfScanStarted = useRef(false);
 	const weather = useWeather(config.weatherCity);
 	const cw = useJellyfinCw(config.jellyfin);
+	const nextUp = useJellyfinNextUp(config.jellyfin);
 	const [toast, setToast] = useState<ToastMessage | null>(null);
 	const toastTimer = useRef(0);
 
@@ -84,28 +96,34 @@ export function App () {
 	const updateConfig = (next: UserConfig) => { setConfig(next); saveConfig(next); };
 
 	// ----- derived rows -----
+	// Butaca ships as a release and a debug flavour; deep-link into whichever is installed.
+	const butacaId = useMemo(() => {
+		const ids = apps.map((a) => a.id);
+		if (ids.indexOf(BUTACA_APP_ID) !== -1) return BUTACA_APP_ID;
+		if (ids.indexOf(BUTACA_DEBUG_APP_ID) !== -1) return BUTACA_DEBUG_APP_ID;
+		return BUTACA_APP_ID;
+	}, [apps]);
+
 	const shownApps = useMemo(() => pickInOrder(apps, config.appIds, (a) => a.id), [apps, config.appIds]);
 	const shownInputs = useMemo(
 		() => (config.sourceIds ? pickInOrder(inputs, config.sourceIds, (s) => s.appId) : inputs),
 		[inputs, config.sourceIds]
 	);
 
-	const cwItems: TileModel[] = useMemo(() => cw.map((item) => ({
-		key: item.id,
-		label: item.seriesName ? `${item.seriesName}: ${item.label}` : item.label,
-		imageUrl: item.imageUrl
-	})), [cw]);
+	const cwItems = useMemo(() => shelfTiles(cw), [cw]);
+	const nextUpItems = useMemo(() => shelfTiles(nextUp), [nextUp]);
 
 	const rows: HomeRow[] = useMemo(() => {
 		const list: HomeRow[] = [];
 		if (cwItems.length) list.push({id: ROW.cw, label: s.rowContinueWatching, items: cwItems});
+		if (nextUpItems.length) list.push({id: ROW.nextUp, label: s.rowNextUp, items: nextUpItems});
 		list.push(
 			{id: ROW.apps, label: s.rowApps, items: shownApps.map(appTile), emptyText: s.emptyApps},
 			{id: ROW.sources, label: s.rowSources, items: shownInputs.map(inputTile), emptyText: s.emptySources},
 			{id: ROW.misc, label: s.rowMore, items: miscTiles}
 		);
 		return list;
-	}, [cwItems, shownApps, shownInputs, miscTiles, s]);
+	}, [cwItems, nextUpItems, shownApps, shownInputs, miscTiles, s]);
 
 	const tabs: SettingsTab[] = useMemo(() => [
 		{id: ROW.apps, label: s.tabApps, noun: s.nounApps, items: apps.map(appTile), shown: shownApps.map(appTile)},
@@ -146,12 +164,12 @@ export function App () {
 			else if (item.key === MISC.lgHome) launchLgHome().catch(() => showToast(s.toastLgHomeFailed, 'error'));
 			return;
 		}
-		if (rowId === ROW.cw) {
-			open(BUTACA_APP_ID, item.label, {jellyfinItemId: item.key});
+		if (rowId === ROW.cw || rowId === ROW.nextUp) {
+			open(butacaId, item.label, {jellyfinItemId: item.key});
 			return;
 		}
 		open(item.key, item.label);
-	}, [showToast, s]);
+	}, [butacaId, showToast, s]);
 
 	const onToggle = useCallback((tabId: string, key: string) => {
 		if (tabId === ROW.apps) {
@@ -167,11 +185,34 @@ export function App () {
 		else if (optionId === OPTION.weather) setEntry('weather');
 		else if (optionId === OPTION.jellyfin) {
 			setJfDraft({});
+			setJfFound(null);
+			jfScanStarted.current = false;
 			setEntry('jf-url');
 		}
 	}, [config]);
 
+	// Autodiscovery for the server-address screen: probe the TV's /24 once per flow. A single
+	// hit skips the keyboard entirely; none or several stay on the screen (the hits show as
+	// the results row, filtered by whatever is typed).
+	useEffect(() => {
+		if (entry !== 'jf-url' || jfScanStarted.current) return;
+		jfScanStarted.current = true;
+		discoverServers((urls) => {
+			setJfFound(urls.slice());
+			if (urls.length === 1) {
+				setJfDraft((draft) => ({...draft, url: normalizeUrl(urls[0])}));
+				setEntry('jf-user');
+			}
+		}).catch(() => setJfFound([]));
+	}, [entry]);
+
 	// ----- text entry flows -----
+	const jfUrlProvider = useCallback((q: string) => Promise.resolve(
+		(jfFound || [])
+			.filter((u) => !q.trim() || u.toLowerCase().indexOf(q.trim().toLowerCase()) !== -1)
+			.map((u) => ({id: u, label: u.replace(/^https?:\/\//, '')}))
+	), [jfFound]);
+
 	const cityProvider = useCallback((q: string) =>
 		searchCities(q).then((cities) => cities.map((c) => ({
 			id: `${c.latitude},${c.longitude}`,
@@ -225,13 +266,14 @@ export function App () {
 					hint={s.weatherSearchHint} provider={cityProvider} onPick={onPickCity} onClose={() => setEntry(null)} />;
 			case 'jf-url':
 				return <TextEntry active title={s.jfUrlTitle} placeholder={s.jfUrlPlaceholder}
-					hint={s.jfChecking} onPick={onPickJfUrl} onClose={() => setEntry(null)} />;
+					hint={jfFound === null ? s.jfScanning : (jfFound.length ? s.jfPickServer : s.jfScanNone)}
+					provider={jfUrlProvider} onPick={onPickJfUrl} onClose={() => setEntry(null)} />;
 			case 'jf-user':
 				return <TextEntry active title={s.jfUserTitle} placeholder={s.jfUserPlaceholder}
 					hint={s.jfChecking} onPick={onPickJfUser} onClose={() => setEntry('jf-url')} />;
 			case 'jf-pass':
 				return <TextEntry active title={s.jfPassTitle} placeholder={s.jfPassPlaceholder}
-					hint={s.jfChecking} onPick={onPickJfPass} onClose={() => setEntry('jf-user')} />;
+					hint={s.jfChecking} submitEmpty onPick={onPickJfPass} onClose={() => setEntry('jf-user')} />;
 			default:
 				return null;
 		}
