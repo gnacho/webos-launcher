@@ -32,12 +32,14 @@ interface Props {
 	provider?: (query: string) => Promise<TextEntryResult[]>;
 	/** allow ↵ with an empty field (the Jellyfin password may be empty) */
 	submitEmpty?: boolean;
+	/** text to start from (a value already chosen in an earlier step) */
+	initial?: string;
 	onPick: (result: TextEntryResult) => void;
 	onClose: () => void;
 }
 
-export function TextEntry ({active, title, placeholder, hint, provider, submitEmpty, onPick, onClose}: Props) {
-	const [query, setQuery] = useState('');
+export function TextEntry ({active, title, placeholder, hint, provider, submitEmpty, initial, onPick, onClose}: Props) {
+	const [query, setQuery] = useState(initial || '');
 	const [results, setResults] = useState<TextEntryResult[]>([]);
 	const [zone, setZone] = useState<'keys' | 'results'>('keys');
 	const [row, setRow] = useState(1);             // skip the digit row for plain text entry

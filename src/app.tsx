@@ -259,20 +259,23 @@ export function App () {
 		else updateConfig({...config, sourceIds: keys});
 	}, [config]);
 
+	// One fresh keyboard per step (`key`), seeded with what that step already knows: without it
+	// the component instance is reused and the text typed for the username shows up in the
+	// password field. Going back keeps the value chosen for that step (see issue #24).
 	const entryScreen = (() => {
 		switch (entry) {
 			case 'weather':
-				return <TextEntry active title={s.weatherSearchTitle} placeholder={s.weatherSearchPlaceholder}
+				return <TextEntry key={entry} active title={s.weatherSearchTitle} placeholder={s.weatherSearchPlaceholder}
 					hint={s.weatherSearchHint} provider={cityProvider} onPick={onPickCity} onClose={() => setEntry(null)} />;
 			case 'jf-url':
-				return <TextEntry active title={s.jfUrlTitle} placeholder={s.jfUrlPlaceholder}
+				return <TextEntry key={entry} active title={s.jfUrlTitle} placeholder={s.jfUrlPlaceholder}
 					hint={jfFound === null ? s.jfScanning : (jfFound.length ? s.jfPickServer : s.jfScanNone)}
-					provider={jfUrlProvider} onPick={onPickJfUrl} onClose={() => setEntry(null)} />;
+					initial={jfDraft.url || ''} provider={jfUrlProvider} onPick={onPickJfUrl} onClose={() => setEntry(null)} />;
 			case 'jf-user':
-				return <TextEntry active title={s.jfUserTitle} placeholder={s.jfUserPlaceholder}
-					hint={s.jfChecking} onPick={onPickJfUser} onClose={() => setEntry('jf-url')} />;
+				return <TextEntry key={entry} active title={s.jfUserTitle} placeholder={s.jfUserPlaceholder}
+					hint={s.jfChecking} initial={jfDraft.user || ''} onPick={onPickJfUser} onClose={() => setEntry('jf-url')} />;
 			case 'jf-pass':
-				return <TextEntry active title={s.jfPassTitle} placeholder={s.jfPassPlaceholder}
+				return <TextEntry key={entry} active title={s.jfPassTitle} placeholder={s.jfPassPlaceholder}
 					hint={s.jfChecking} submitEmpty onPick={onPickJfPass} onClose={() => setEntry('jf-user')} />;
 			default:
 				return null;
