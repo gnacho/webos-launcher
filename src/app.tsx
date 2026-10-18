@@ -7,7 +7,7 @@ import {Toast, type ToastMessage} from './components/Toast';
 import type {TileModel} from './components/Tile';
 import {useStrings} from './hooks/useStrings';
 import {useWeather} from './hooks/useWeather';
-import {useJellyfinCw, useJellyfinNextUp} from './hooks/useJellyfinShelf';
+import {useJellyfinCw} from './hooks/useJellyfinCw';
 import {listApps, readAppCache, writeAppCache, type AppEntry} from './lib/apps';
 import {listInputs, MOCK_INPUTS, type InputSource} from './lib/inputs';
 import {launchApp, launchLgHome} from './lib/launch';
@@ -24,7 +24,7 @@ import {BUTACA_APP_ID, BUTACA_DEBUG_APP_ID, TIMING} from './config/constants';
 type Screen = 'home' | 'settings';
 type Entry = 'weather' | 'jf-url' | 'jf-user' | 'jf-pass' | null;
 
-const ROW = {cw: 'cw', nextUp: 'next-up', apps: 'apps', sources: 'sources', misc: 'misc'} as const;
+const ROW = {cw: 'cw', apps: 'apps', sources: 'sources', misc: 'misc'} as const;
 const MISC = {lgHome: 'lg-home', settings: 'settings'} as const;
 const OPTION = {useHomebrew: 'use-homebrew', weather: 'weather', jellyfin: 'jellyfin'} as const;
 
@@ -51,7 +51,6 @@ export function App () {
 	const jfScanStarted = useRef(false);
 	const weather = useWeather(config.weatherCity);
 	const cw = useJellyfinCw(config.jellyfin);
-	const nextUp = useJellyfinNextUp(config.jellyfin);
 	const [toast, setToast] = useState<ToastMessage | null>(null);
 	const toastTimer = useRef(0);
 
@@ -111,19 +110,17 @@ export function App () {
 	);
 
 	const cwItems = useMemo(() => shelfTiles(cw), [cw]);
-	const nextUpItems = useMemo(() => shelfTiles(nextUp), [nextUp]);
 
 	const rows: HomeRow[] = useMemo(() => {
 		const list: HomeRow[] = [];
 		if (cwItems.length) list.push({id: ROW.cw, label: s.rowContinueWatching, items: cwItems});
-		if (nextUpItems.length) list.push({id: ROW.nextUp, label: s.rowNextUp, items: nextUpItems});
 		list.push(
 			{id: ROW.apps, label: s.rowApps, items: shownApps.map(appTile), emptyText: s.emptyApps},
 			{id: ROW.sources, label: s.rowSources, items: shownInputs.map(inputTile), emptyText: s.emptySources},
 			{id: ROW.misc, label: s.rowMore, items: miscTiles}
 		);
 		return list;
-	}, [cwItems, nextUpItems, shownApps, shownInputs, miscTiles, s]);
+	}, [cwItems, shownApps, shownInputs, miscTiles, s]);
 
 	const tabs: SettingsTab[] = useMemo(() => [
 		{id: ROW.apps, label: s.tabApps, noun: s.nounApps, items: apps.map(appTile), shown: shownApps.map(appTile)},
@@ -164,7 +161,7 @@ export function App () {
 			else if (item.key === MISC.lgHome) launchLgHome().catch(() => showToast(s.toastLgHomeFailed, 'error'));
 			return;
 		}
-		if (rowId === ROW.cw || rowId === ROW.nextUp) {
+		if (rowId === ROW.cw) {
 			open(butacaId, item.label, {jellyfinItemId: item.key});
 			return;
 		}

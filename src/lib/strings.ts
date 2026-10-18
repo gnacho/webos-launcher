@@ -43,7 +43,6 @@ export interface Strings {
 	weatherSearchHint: string;
 	weatherNoResults: string;
 	rowContinueWatching: string;
-	rowNextUp: string;
 	optionJellyfin: string;
 	optionJellyfinDesc: string;
 	jellyfinNotSet: string;
@@ -104,9 +103,8 @@ export const EN: Strings = {
 	weatherSearchHint: 'Use the on-screen keyboard; results appear as you type.',
 	weatherNoResults: 'No cities found',
 	rowContinueWatching: 'Continue watching',
-	rowNextUp: 'Next up',
 	optionJellyfin: 'Jellyfin server',
-	optionJellyfinDesc: 'Connects a server to show Continue watching and Next up rows; OK on an item opens it in Butaca.',
+	optionJellyfinDesc: 'Connects a server to show a Continue watching row; OK on an item opens it in Butaca.',
 	jellyfinNotSet: 'Not connected',
 	jfUrlTitle: 'Jellyfin server address',
 	jfUrlPlaceholder: 'e.g. http://192.168.1.10:8096',
@@ -164,9 +162,8 @@ export const ES: Strings = {
 	weatherSearchHint: 'Usa el teclado en pantalla; los resultados aparecen mientras escribes.',
 	weatherNoResults: 'No se encontraron ciudades',
 	rowContinueWatching: 'Seguir viendo',
-	rowNextUp: 'A continuación',
 	optionJellyfin: 'Servidor Jellyfin',
-	optionJellyfinDesc: 'Conecta un servidor para mostrar las filas Seguir viendo y A continuación; OK en un item lo abre en Butaca.',
+	optionJellyfinDesc: 'Conecta un servidor para mostrar la fila Seguir viendo; OK en un item lo abre en Butaca.',
 	jellyfinNotSet: 'Sin conectar',
 	jfUrlTitle: 'Dirección del servidor Jellyfin',
 	jfUrlPlaceholder: 'p.ej. http://192.168.1.10:8096',

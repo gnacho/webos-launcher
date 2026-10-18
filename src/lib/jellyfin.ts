@@ -102,13 +102,6 @@ export function fetchResume (server: JellyfinServer, limit = 12): Promise<CwItem
 	return getJson(url, server.token).then((data) => toShelf(server, (data as {Items?: ShelfItem[]}).Items || []));
 }
 
-/** Next Up: the next unwatched episode of every series the user has started. */
-export function fetchNextUp (server: JellyfinServer, limit = 12): Promise<CwItem[]> {
-	const url = `${server.url}/Shows/NextUp`
-		+ `?UserId=${server.userId}&Limit=${limit}&Fields=${SHELF_FIELDS}&ImageTypeLimit=1&EnableTotalRecordCount=false`;
-	return getJson(url, server.token).then((data) => toShelf(server, (data as {Items?: ShelfItem[]}).Items || []));
-}
-
 // ---------- LAN autodiscovery ----------
 //
 // A web app cannot do SSDP (no raw UDP), but the common Jellyfin setup answers an
