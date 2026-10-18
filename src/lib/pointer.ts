@@ -19,9 +19,19 @@ declare global {
 
 /** Hide the pointer now. No-op off webOS or on firmware without the API. */
 export function hidePointer (): void {
+	cursorHidden(true);
+}
+
+/** Show the pointer now (text-entry screens want it: aiming at a keyboard beats
+ *  walking a 5-way through digits). No-op off webOS. */
+export function showPointer (): void {
+	cursorHidden(false);
+}
+
+function cursorHidden (hidden: boolean): void {
 	const sys = window.webOSSystem || window.PalmSystem;
 	if (!sys || typeof sys.setCursorHidden !== 'function') return;
-	try { sys.setCursorHidden(true); }
+	try { sys.setCursorHidden(hidden); }
 	catch { /* best effort */ }
 }
 

@@ -48,7 +48,7 @@ const BASE_CATALOG: CatalogApp[] = [
 	{id: 'com.espn.espnplus-prod', title: 'ESPN', color: '#c8102e'},
 	{id: 'vudu', title: 'Fandango at Home', color: '#3399ff'},
 	// Spain (IDs from public sources, unverified; skipped if wrong)
-	{id: 'rtve', title: 'RTVE Play', color: '#0079c8'},
+	{id: 'rtve.smarttv.alacarta.pro', title: 'RTVE Play', icon: 'rtve.smarttv.alacarta.pro.png', color: '#0079c8'},
 	{id: 'com.movistarplus.plus', title: 'Movistar Plus+', color: '#019df4'},
 	{id: 'com.antena3.atresplayer', title: 'Atresplayer', color: '#0f8b8d'},
 	{id: 'com.mediaset.mitele', title: 'Mitele', color: '#e6a800'},

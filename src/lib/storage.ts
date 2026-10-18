@@ -4,6 +4,7 @@
 import {STORAGE_KEY} from '../config/constants';
 import {DEFAULT_APP_IDS} from '../config/catalog';
 import type {WeatherCity} from './weather';
+import type {JellyfinServer} from './jellyfin';
 
 export interface UserConfig {
 	/** ordered app IDs for the Apps row */
@@ -14,13 +15,16 @@ export interface UserConfig {
 	useHomebrew: boolean;
 	/** city for the weather widget; null → hidden */
 	weatherCity: WeatherCity | null;
+	/** Jellyfin server for the Continue Watching row; null → row hidden */
+	jellyfin: JellyfinServer | null;
 }
 
 export const DEFAULT_CONFIG: UserConfig = {
 	appIds: DEFAULT_APP_IDS.slice(),
 	sourceIds: null,
 	useHomebrew: false,
-	weatherCity: null
+	weatherCity: null,
+	jellyfin: null
 };
 
 export function loadConfig (): UserConfig {
@@ -34,6 +38,9 @@ export function loadConfig (): UserConfig {
 			useHomebrew: parsed.useHomebrew === true,
 			weatherCity: parsed.weatherCity && typeof parsed.weatherCity.name === 'string'
 				? parsed.weatherCity as WeatherCity
+				: null,
+			jellyfin: parsed.jellyfin && typeof parsed.jellyfin.url === 'string' && typeof parsed.jellyfin.token === 'string'
+				? parsed.jellyfin as JellyfinServer
 				: null
 		};
 	} catch {
